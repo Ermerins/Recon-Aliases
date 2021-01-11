@@ -1,9 +1,16 @@
 crtsh(){
-curl -s https://crt.sh/?Identity=%.$1 | grep ">*.$1" | sed 's/<[/]*[TB][DR]>/\n/g' | grep -vE "<|^[\*]*[\.]*$1" | sort -u | awk 'NF'
+curl -s "https://crt.sh/?q=%25.$1&output=json" | jq -r '.[].name_value' | sed 's/\*\.//g' | cut -d "@" -f 2 | sort -u
 }
 
 certspotter(){ 
-curl -s https://certspotter.com/api/v0/certs\?domain\=$1 | jq '.[].dns_names[]' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u | grep $1
+curl -s https://certspotter.com/api/v0/certs\?domain\=$1 | jq '.[].dns_names[]' | sed 's/\"//g' | sed 's/\*\.//g' | cut -d "@" -f 2 | sort -u | grep $1
+}
+
+# Give a list of domains / queries and get all the crtsh data
+crtlist(){
+for i in `cat $1`; do
+curl -s "https://crt.sh/?q=%25.$i&output=json" | jq -r '.[].name_value' | sed 's/\*\.//g' | cut -d "@" -f 2 | sort -u
+done
 }
 
 # Input: domain name
