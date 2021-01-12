@@ -26,6 +26,17 @@ recon(){
 subs $1; validate subs.txt; probe subs.txt; aqua probed.txt
 }
 
+db(){
+python3 ~/tools/dirsearch/dirsearch.py -u $1 -e $2 -t 50 -H "X-FORWARDED-FOR: 127.0.0.1" -w /root/tools/wordlists/content_discovery_all.txt
+}
+
+dbw(){
+python3 ~/tools/dirsearch/dirsearch.py -u $1 -e $2 -t 50 -H "X-FORWARDED-FOR: 127.0.0.1" -w $3
+}
+
+dbwl(){
+python3 ~/tools/dirsearch/dirsearch.py -l $1 -e $2 -t 50 -H "X-FORWARDED-FOR: 127.0.0.1" -w $3
+}
 
 ####### Larger Functions ########
 
