@@ -13,28 +13,53 @@ curl -s "https://crt.sh/?q=%25.$i&output=json" | jq -r '.[].name_value' | sed 's
 done
 }
 
-# Input: domain name
-subs_passive(){
-if [ -z "$CENSYS_API_ID" ]; then echo "Please export API ID and Secret" && exit 1; fi 
-python /root/tools/censys-subdomain-finder/censys_subdomain_finder.py $1 -o censys_output_tmp.txt 
-crtsh $1 > crtsh_output_tmp.txt 
-subfinder -d $1 -o subfinder_output_tmp.txt 
-python /root/tools/Sublist3r/sublist3r.py -d $1 -o sublister_output_tmp.txt 
-cat *_output_tmp.txt | sort -u > subdomains_passive.txt 
-rm *_output_tmp.txt
-}
-
-# Input: subdomains file
-subs_validate(){
-rm /root/tools/nameservers.txt
-wget https://public-dns.info/nameservers.txt -O /root/tools/nameservers/nameservers.txt
-massdns -r /root/tools/nameservers/nameservers.txt -o S -w massdns.txt $1 
-awk -F ". " '{print $1}' "massdns.txt" | sort -u > subdomains_live.txt 
-grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' massdns.txt | sort -u > ips_live.txt 
-rm massdns.txt
-}
-
 # Input: live subdomains
 aqua(){
 cat $1 | aquatone -out aquatone
 }
+
+probe(){
+cat $1 | httprobe | tee -a probed.txt
+}
+
+recon(){
+subs $1; validate subs.txt; probe subs.txt; aqua probed.txt
+}
+
+
+####### Larger Functions ########
+
+# Input: domain name
+subs(){
+if [ -z "$CENSYS_API_ID" ]; then echo "Please export API ID and Secret" && return 1; fi 
+
+echo "Running censys"
+python /root/tools/censys-subdomain-finder/censys_subdomain_finder.py $1 -o censys.tmp > /dev/null 2>&1
+
+echo "Running crt.sh"
+crtsh $1 > crtsh.tmp 
+
+echo "Running subfinder"
+subfinder -d $1 -o subfinder.tmp > /dev/null 2>&1
+
+echo "Running sublist3r"
+python /root/tools/Sublist3r/sublist3r.py -d $1 -o sublister.tmp > /dev/null 2>&1
+
+echo "Running amass"
+amass enum -config ~/.config/amass/config.ini -passive -d $1 -json $1.json > /dev/null 2>&1 && jq .name $1.json | sed "s/\"//g" > amass.tmp && rm $1.json
+
+cat *.tmp | sort -u > subs.txt
+rm *.tmp
+}
+
+# Input: subdomains file
+validate(){
+rm /root/tools/nameservers.txt
+wget https://public-dns.info/nameservers.txt -O /root/tools/nameservers/nameservers.txt
+massdns -r /root/tools/nameservers/nameservers.txt -o S -w massdns.txt $1 
+awk -F ". " '{print $1}' "massdns.txt" | sort -u > sub_live.txt 
+grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' massdns.txt | sort -u > ips_live.txt 
+rm massdns.txt
+}
+
+
