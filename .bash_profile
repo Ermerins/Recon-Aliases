@@ -26,17 +26,17 @@ recon(){
 subs $1; probe subs.txt; aqua probed.txt
 }
 
-db(){
-python3 ~/tools/dirsearch/dirsearch.py -u $1 -e $2 -t 200 -H "X-FORWARDED-FOR: 127.0.0.1" -w /root/tools/wordlists/content_discovery_all.txt
+ds(){
+python3 ~/tools/dirsearch/dirsearch.py -u $1 -e $2 -t 100 -H "X-FORWARDED-FOR: 127.0.0.1" -w /root/tools/SecLists/Discovery/Web-Content/directory-list-2.3-small.txt -x $3
 }
 
 # dbw hostanme php,html /root/tools/SecLists/Discovery/Web-Content/raft-large-directories.txt
-dbw(){
-python3 ~/tools/dirsearch/dirsearch.py -u $1 -e $2 -t 200 -H "X-FORWARDED-FOR: 127.0.0.1" -w $3
+dsw(){
+python3 ~/tools/dirsearch/dirsearch.py -u $1 -e $2 -t 100 -H "X-FORWARDED-FOR: 127.0.0.1" -w $3 -x $4
 }
 
-dbwl(){
-python3 ~/tools/dirsearch/dirsearch.py -l $1 -e $2 -t 200 -H "X-FORWARDED-FOR: 127.0.0.1" -w $3
+dswl(){
+python3 ~/tools/dirsearch/dirsearch.py -l $1 -e $2 -t 100 -H "X-FORWARDED-FOR: 127.0.0.1" -w $3 -x $4
 }
 
 portscan(){
@@ -47,11 +47,6 @@ sudo masscan -p1-65535 --rate=100000 --open --range $1
 
 # Input: domain name
 subs(){
-if [ -z "$CENSYS_API_ID" ]; then echo "Please export API ID and Secret" && return 1; fi 
-
-echo "Running censys"
-python /root/tools/censys-subdomain-finder/censys_subdomain_finder.py $1 -o censys.tmp > /dev/null 2>&1
-
 echo "Running crt.sh"
 crtsh $1 > crtsh.tmp 
 
