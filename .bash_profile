@@ -26,17 +26,30 @@ recon(){
 subs $1; probe subs.txt; aqua probed.txt
 }
 
+fuzz() {
+ffuf -c -v -w /root/tools/SecLists/Discovery/Web-Content/directory-list-2.3-small.txt -u $1/FUZZ 
+}
+
+fuzzlimit() {
+ffuf -c -v -w /root/tools/SecLists/Discovery/Web-Content/directory-list-2.3-small.txt -u $1/FUZZ -rate 1
+}
+
 ds(){
-python3 ~/tools/dirsearch/dirsearch.py -u $1 -e $2 -t 100 -H "X-FORWARDED-FOR: 127.0.0.1" -w /root/tools/SecLists/Discovery/Web-Content/directory-list-2.3-small.txt -x $3
+python3 ~/tools/dirsearch/dirsearch.py -u $1 -e $2 -t 100 -H "X-FORWARDED-FOR: 127.0.0.1" -w /root/tools/SecLists/Discovery/Web-Content/directory-list-2.3-small.txt -x $3 --full-url
+}
+
+dslimit(){
+python3 ~/tools/dirsearch/dirsearch.py -u $1 -e $2 -t 100 -H "X-FORWARDED-FOR: 127.0.0.1" -w /root/too
+ls/SecLists/Discovery/Web-Content/directory-list-2.3-small.txt -x $3 --full-url -t 1 -s 1
 }
 
 # dbw hostanme php,html /root/tools/SecLists/Discovery/Web-Content/raft-large-directories.txt
 dsw(){
-python3 ~/tools/dirsearch/dirsearch.py -u $1 -e $2 -t 100 -H "X-FORWARDED-FOR: 127.0.0.1" -w $3 -x $4
+python3 ~/tools/dirsearch/dirsearch.py -u $1 -e $2 -t 100 -H "X-FORWARDED-FOR: 127.0.0.1" -w $3 -x $4 --full-url
 }
 
 dswl(){
-python3 ~/tools/dirsearch/dirsearch.py -l $1 -e $2 -t 100 -H "X-FORWARDED-FOR: 127.0.0.1" -w $3 -x $4
+python3 ~/tools/dirsearch/dirsearch.py -l $1 -e $2 -t 100 -H "X-FORWARDED-FOR: 127.0.0.1" -w $3 -x $4 --full-url
 }
 
 portscan(){
